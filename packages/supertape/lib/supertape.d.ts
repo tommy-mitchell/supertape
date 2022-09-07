@@ -17,10 +17,13 @@ type EmptyOutput = {
     output: '';
 };
 
-type EqualResult<R, E> = Required<OperatorResult<R, E>>;
+/** The result of the `t.equal()` operators. */
+type EqualResult<R, E> = Required<Result<R, E>>;
 
-type PassResult = Pick<OperatorResult, 'message'> & EmptyOutput & {is: true};
+/** The result of the `t.pass()` operator. */
+type PassResult = Pick<Result, 'message'> & EmptyOutput & {is: true};
 
+/** The result of the `t.fail()` operator. */
 type FailResult<M = Error> = EmptyOutput & {
     is: false;
     stack: Error['stack'];
@@ -28,28 +31,132 @@ type FailResult<M = Error> = EmptyOutput & {
     at: string;
 };
 
-type OkResult<R, E> = Omit<Required<OperatorResult<R, E>>, 'output'>;
+/** The result of the `t.ok()` operators. */
+type OkResult<R, E> = Omit<Required<Result<R, E>>, 'output'>;
 
-type MatchResult = Omit<Required<OperatorResult<string, string | RegExp>>, 'output'>;
+/** The result of the `t.match()` operators. */
+type MatchResult = Omit<Required<Result<string, string | RegExp>>, 'output'>;
 
+/** Built-in internal assertions available in extension operators. */
 type Operators = OperatorStub & {
+    /**
+     * Asserts that `result` and `expected` are strictly equal.
+     *
+     * @note uses `Object.is()`
+     *
+     * @param result The resulting value to be tested.
+     * @param expected The value to be tested against.
+     * @param message An optional description of the assertion.
+     */
     equal: <R, E>(result: R, expected: E, message?: string) => EqualResult<R, E>;
+    
+    /**
+     * Asserts that `result` and `expected` are not strictly equal.
+     *
+     * @note uses `!Object.is()`
+     *
+     * @param result The resulting value to be tested.
+     * @param expected The value to be tested against.
+     * @param message An optional description of the assertion.
+     */
     notEqual: <R, E>(result: R, expected: E, message?: string) => EqualResult<R, E>;
+    
+    /**
+     * Asserts that `result` and `expected` are loosely equal, with the same
+     * structure and nested values.
+     *
+     * @note uses node's `deepEqual()` algorithm with strict comparisons
+     * (`===`) on leaf nodes
+     *
+     * @param result The resulting value to be tested.
+     * @param expected The value to be tested against.
+     * @param message An optional description of the assertion.
+     */
     deepEqual: <R, E>(result: R, expected: E, message?: string) => EqualResult<R, E>;
+    
+    /**
+     * Asserts that `result` and `expected` are not loosely equal, with different
+     * structure and/or nested values.
+     *
+     * @note uses node's `deepEqual()` algorithm with strict comparisons
+     * (`===`) on leaf nodes
+     *
+     * @param result The resulting value to be tested.
+     * @param expected The value to be tested against.
+     * @param message An optional description of the assertion.
+     */
     notDeepEqual: <R, E>(result: R, expected: E, message?: string) => EqualResult<R, E>;
+    
+    /**
+     * Asserts that `result` is truthy.
+     *
+     * @param result The resulting value to be tested.
+     * @param message An optional description of the assertion.
+     */
     ok: <R>(result: boolean | R, message?: string) => OkResult<R, true>;
+    
+    /**
+     * Asserts that `result` is falsy.
+     *
+     * @param result The resulting value to be tested.
+     * @param message An optional description of the assertion.
+     */
     notOk: <R>(result: boolean | R, message?: string) => OkResult<R | string, false>;
-    pass: (message?: string) => PassResult;
+    
+    /**
+     * Generates a passing assertion.
+     *
+     * @param message A description of the assertion.
+     */
+    pass: (message: string) => PassResult;
+    
+    /**
+     * Generates a failing assertion.
+     *
+     * @param message A description of the assertion.
+     */
     fail: (message: string) => FailResult<string>;
+    
+    /**
+     * Asserts that `result` matches the regex `pattern`.
+     *
+     * @note if `pattern` is not a valid regex, the assertion fails.
+     *
+     * @param result The resulting value to be tested.
+     * @param pattern A regex to be tested against.
+     * @param message An optional description of the assertion.
+     */
     match: (result: string, pattern: string | RegExp, message?: string) => MatchResult | FailResult;
+    
+    /**
+     * Asserts that `result` does not match the regex `pattern`.
+     *
+     * @note if `pattern` is not a valid regex, the assertion always fails.
+     *
+     * @param result The resulting value to be tested.
+     * @param pattern A regex to be tested against.
+     * @param message An optional description of the assertion.
+     */
     notMatch: (result: string, pattern: string | RegExp, message?: string) => MatchResult;
+    
+    /**
+     * Declares the end of a test explicitly. `t.end()` must be
+     * called once (and only once) per test, and no further
+     * assertions are allowed.
+     */
     end: () => void;
 };
 
 type CommentOperator = {
+    /**
+     * Prints a message without breaking the `tap` output.
+     *
+     * @param message The message to be printed.
+     */
     comment: (message: string) => void;
 };
 
+/** Built-in assertions available in tests. */
 type Test = CommentOperator & {
     [operator in keyof Operators]: (...args: Parameters<Operators[operator]>) => void;
 };
