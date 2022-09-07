@@ -250,21 +250,46 @@ type TestOptions = {
     checkScopes?: boolean;
 };
 
+/**
+ * Declares a new test. By default, Supertape expects each test
+ * message to be scoped in the form `'scope: message'`, with
+ * one assertion per test. Each test must finish with a call to
+ * `t.end()`, and no further assertion(s) are allowed after it.
+ * Settings in `options` take precedence over any setting set
+ * elsewhere.
+ */
 declare function test(message: string, fn: (t: Test) => void, options?: TestOptions): void;
+
+/** Creates a new test to be skipped over. */
+declare const skip: typeof test;
+
+/** Creates a new test to be the only test run. */
+declare const only: typeof test;
+
+/** Creates a new `test` object with the given custom extension operators added. */
+declare function extend(extensions: CustomOperators): typeof test;
+
 declare namespace test {
-    export var only: typeof test;
-    export var skip: typeof test;
+    export {
+        skip,
+        only,
+        extend,
+        stub,
+        test,
+    };
 }
 
 export default test;
 
-declare function extend(extensions: CustomOperators): typeof test;
-
 export {
     test,
     Test,
+    TestOptions,
     stub,
     Stub,
+    skip,
+    only,
     extend,
+    CustomOperators,
 };
 
