@@ -266,8 +266,17 @@ declare const skip: typeof test;
 /** Creates a new test to be the only test run. */
 declare const only: typeof test;
 
+/** Built-in and custom extension assertions available in tests. */
+type CustomTest<O extends CustomOperators> = Test & {
+    // Map custom operators onto `Test`
+    [operator in keyof O]: (...args: Parameters<ReturnType<O[operator]>>) => void;
+};
+
+/** A `test` object that includes custom extension operators. */
+type ExtendedTest<O extends CustomOperators> = (message: string, fn: (t: CustomTest<O>) => void, options?: TestOptions) => void;
+
 /** Creates a new `test` object with the given custom extension operators added. */
-declare function extend(extensions: CustomOperators): typeof test;
+declare function extend<O extends CustomOperators>(extensions: O): ExtendedTest<O>;
 
 declare namespace test {
     export {
