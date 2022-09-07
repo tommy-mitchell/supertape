@@ -32,6 +32,28 @@ type Test = Operator & OperatorStub & {
     end: () => void;
 };
 
+/** Regular `TAP` output. @see https://www.npmjs.com/package/@supertape/formatter-tap */
+type FormatterTap = 'tap';
+
+/** Outputs only failed tests. @see https://www.npmjs.com/package/@supertape/formatter-fail */
+type FormatterFail = 'fail';
+
+/** Outputs with a progress bar. @see https://www.npmjs.com/package/@supertape/formatter-progress-bar */
+type FormatterProgressBar = 'progress-bar';
+
+/** JSON output. @see https://www.npmjs.com/package/@supertape/formatter-json-lines */
+type FormatterJSONLines = 'json-lines';
+
+/** Minimal output. @see https://www.npmjs.com/package/@supertape/formatter-short */
+type FormatterShort = 'short';
+
+/** Built-in `tap` formatters for test outputs. */
+type BuiltInFormatter = FormatterTap
+    | FormatterFail
+    | FormatterProgressBar
+    | FormatterJSONLines
+    | FormatterShort;
+
 /** Options available per test. */
 type TestOptions = {
     /**
@@ -63,7 +85,7 @@ type TestOptions = {
      * @default 'tap'
      * @note When using the CLI, the default is `progress-bar`.
      */
-    format?: string;
+    format?: BuiltInFormatter;
     
     /**
      * Whether or not to run this test.
