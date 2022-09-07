@@ -32,15 +32,66 @@ type Test = Operator & OperatorStub & {
     end: () => void;
 };
 
+/** Options available per test. */
 type TestOptions = {
+    /**
+     * Whether or not to skip this test.
+     * @default false
+     */
     skip?: boolean;
+    
+    /**
+     * Whether or not to mark this test as the only one run by the process.
+     * @default false
+     */
     only?: boolean;
+    
+    /**
+     * Custom extension operators to use in this test.
+     * @default {}
+     */
     extensions?: CustomOperator;
+    
+    /**
+     * Whether or not to not report test results.
+     * @default false
+     */
     quiet?: boolean;
+    
+    /**
+     * Which output format to use for the test results.
+     * @default 'tap'
+     * @note When using the CLI, the default is `progress-bar`.
+     */
     format?: string;
+    
+    /**
+     * Whether or not to run this test.
+     * @default true
+     */
     run?: boolean;
+    
+    /**
+     * Whether or not to check test messages for duplicates.
+     * By default, Supertape expects each message to be unique.
+     * @default true
+     */
     checkDuplicates?: boolean;
+    
+    /**
+     * Whether or not to check the number of assertions per
+     * test. By default, Supertape expects each test to have
+     * only one assertion.
+     * @default true
+     */
     checkAssertionsCount?: boolean;
+    
+    /**
+     * Whether or not to check that test messages are scoped
+     * (i.e. in the form `'scope: message'`). By default,
+     * Supertape expects each test to be scoped.
+     * @default true
+     */
     checkScopes?: boolean;
 };
 
