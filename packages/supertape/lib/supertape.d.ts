@@ -5,31 +5,57 @@ import {
     Stub,
 } from '@cloudcmd/stub';
 
-type Result = {
-    is: boolean,
-    expected: unknown,
-    actual: unknown,
-    message: string,
-    output: string,
+type OperatorResult<R = unknown, E = unknown> = {
+    is: boolean;
+    message: string;
+    output?: string;
+    result?: R;
+    expected?: E;
 };
 
-type Operator = {
-    [index: string]: (...args: any[]) => Result
+type EmptyOutput = {
+    output: '';
 };
 
-type Test = Operator & OperatorStub & {
-    equal: (result: unknown, expected: unknown, message?: string) => Result;
-    notEqual: (result: unknown, expected: unknown, message?: string) => Result;
-    deepEqual: (result: unknown, expected: unknown, message?: string) => Result;
-    notDeepEqual: (result: unknown, expected: unknown, message?: string) => Result;
-    fail: (message: string) => Result;
-    pass: (message: string) => Result;
-    ok: (result: boolean | unknown, message?: string) => Result;
-    comment: (message: string) => Result;
-    notOk: (result: boolean | unknown, message?: string) => Result;
-    match: (result: string, pattern: string | RegExp, message?: string) => Result;
-    notMatch: (result: string, pattern: string | RegExp, message?: string) => Result;
+type EqualResult<R, E> = Required<OperatorResult<R, E>>;
+
+type PassResult = Pick<OperatorResult, 'message'> & EmptyOutput & {is: true};
+
+type FailResult<M = Error> = EmptyOutput & {
+    is: false;
+    stack: Error['stack'];
+    message: M;
+    at: string;
+};
+
+type OkResult<R, E> = Omit<Required<OperatorResult<R, E>>, 'output'>;
+
+type MatchResult = Omit<Required<OperatorResult<string, string | RegExp>>, 'output'>;
+
+type Operators = OperatorStub & {
+    equal: <R, E>(result: R, expected: E, message?: string) => EqualResult<R, E>;
+    notEqual: <R, E>(result: R, expected: E, message?: string) => EqualResult<R, E>;
+    deepEqual: <R, E>(result: R, expected: E, message?: string) => EqualResult<R, E>;
+    notDeepEqual: <R, E>(result: R, expected: E, message?: string) => EqualResult<R, E>;
+    ok: <R>(result: boolean | R, message?: string) => OkResult<R, true>;
+    notOk: <R>(result: boolean | R, message?: string) => OkResult<R | string, false>;
+    pass: (message?: string) => PassResult;
+    fail: (message: string) => FailResult<string>;
+    match: (result: string, pattern: string | RegExp, message?: string) => MatchResult | FailResult;
+    notMatch: (result: string, pattern: string | RegExp, message?: string) => MatchResult;
     end: () => void;
+};
+
+type CommentOperator = {
+    comment: (message: string) => void;
+};
+
+type Test = CommentOperator & {
+    [operator in keyof Operators]: (...args: Parameters<Operators[operator]>) => void;
+};
+
+type CustomOperators = {
+    [operatorName: string]: (t: Operators) => (...args: any[]) => OperatorResult | FailResult;
 };
 
 /** Regular `TAP` output. @see https://www.npmjs.com/package/@supertape/formatter-tap */
@@ -72,7 +98,7 @@ type TestOptions = {
      * Custom extension operators to use in this test.
      * @default {}
      */
-    extensions?: CustomOperator;
+    extensions?: CustomOperators;
     
     /**
      * Whether or not to not report test results.
@@ -125,11 +151,7 @@ declare namespace test {
 
 export default test;
 
-type CustomOperator = {
-    [index: string]: (operator: Operator) => (...args: any[]) => Result
-};
-
-declare function extend(customOperator: CustomOperator): typeof test;
+declare function extend(extensions: CustomOperators): typeof test;
 
 export {
     test,
