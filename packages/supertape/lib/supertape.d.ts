@@ -18,10 +18,10 @@ type EmptyOutput = {
 };
 
 /** The result of the `t.equal()` operators. */
-type EqualResult<R, E> = Required<Result<R, E>>;
+type EqualResult<R, E> = Required<OperatorResult<R, E>>;
 
 /** The result of the `t.pass()` operator. */
-type PassResult = Pick<Result, 'message'> & EmptyOutput & {is: true};
+type PassResult = Pick<OperatorResult, 'message'> & EmptyOutput & {is: true};
 
 /** The result of the `t.fail()` operator. */
 type FailResult<M = Error> = EmptyOutput & {
@@ -32,10 +32,10 @@ type FailResult<M = Error> = EmptyOutput & {
 };
 
 /** The result of the `t.ok()` operators. */
-type OkResult<R, E> = Omit<Required<Result<R, E>>, 'output'>;
+type OkResult<R, E> = Omit<Required<OperatorResult<R, E>>, 'output'>;
 
 /** The result of the `t.match()` operators. */
-type MatchResult = Omit<Required<Result<string, string | RegExp>>, 'output'>;
+type MatchResult = Omit<Required<OperatorResult<string, string | RegExp>>, 'output'>;
 
 /** Built-in internal assertions available in extension operators. */
 type Operators = OperatorStub & {
